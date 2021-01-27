@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Fragment, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getList } from "modules/laureates/store/actions";
+import { listSelector } from "modules/laureates/store/selectors";
+import Pagination from "./modules/pagination/ui";
 
-function App() {
+const App = () => {
+  const [years, setYears] = useState({
+    min: 2010,
+    max: 2019,
+  });
+
+  const dispatch = useDispatch();
+  const laureateslist = useSelector(listSelector);
+
+  useEffect(() => {
+    dispatch(getList());
+  }, [dispatch]);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Pagination years={years} setYears={setYears} />
+
+      {laureateslist
+        .filter((prize) => +prize.year >= years.min && +prize.year <= years.max)
+        .reverse()
+        .map((prize) => (
+          <Fragment key={`${prize.year}_${prize.category}`}>
+            <div>Year: {prize.year}</div>
+            <div>Category: {prize.category}</div>
+            <ul>
+              {prize.laureates?.map((laureate) => (
+                <li
+                  key={laureate.id}
+                >{`${laureate.firstname} ${laureate.surname}`}</li>
+              ))}
+            </ul>
+          </Fragment>
+        ))}
     </div>
   );
-}
+};
 
 export default App;
